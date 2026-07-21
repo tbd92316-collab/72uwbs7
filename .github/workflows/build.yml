@@ -22,11 +22,13 @@ jobs:
     - name: Create Project Files Automatically
       shell: bash
       run: |
-        # 1. Initialize package.json with fixed stable versions
+        # 1. Initialize package.json with author, description, and publish:null
         cat << 'EOF' > package.json
         {
           "name": "youtube-desktop",
           "version": "1.0.0",
+          "description": "YouTube Desktop Application",
+          "author": "Your Name",
           "main": "main.js",
           "type": "commonjs",
           "scripts": {
@@ -43,7 +45,8 @@ jobs:
             "appId": "com.youtube.desktop",
             "win": {
               "target": "nsis"
-            }
+            },
+            "publish": null
           }
         }
         EOF
@@ -77,6 +80,8 @@ jobs:
       run: npm install
 
     - name: Build .exe Package
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: npm run build
 
     - name: Upload .exe Artifact
