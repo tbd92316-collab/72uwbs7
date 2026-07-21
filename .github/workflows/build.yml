@@ -1,0 +1,80 @@
+name: Build YouTube Desktop App (.exe)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Create Project Files Automatically
+      shell: bash
+      run: |
+        # 1. Initialize package.json
+        cat << 'EOF' > package.json
+        {
+          "name": "youtube-desktop",
+          "version": "1.0.0",
+          "main": "main.js",
+          "scripts": {
+            "build": "electron-builder --win"
+          },
+          "build": {
+            "appId": "com.youtube.desktop",
+            "win": {
+              "target": "nsis"
+            }
+          }
+        }
+        EOF
+
+        # 2. Create main.js (App code to load YouTube)
+        cat << 'EOF' > main.js
+        const { app, BrowserWindow } = require('electron');
+
+        function createWindow() {
+          const win = new BrowserWindow({
+            width: 1200,
+            height: 800,
+            autoHideMenuBar: true, // Menu bar hide karne ke liye
+            webPreferences: {
+              nodeIntegration: false,
+              contextIsolation: true
+            }
+          });
+
+          win.loadURL('https://www.youtube.com');
+        }
+
+        app.whenReady().then(createWindow);
+
+        app.on('window-all-closed', () => {
+          if (process.platform !== 'darwin') app.quit();
+        });
+        EOF
+
+    - name: Install Dependencies
+      run: |
+        npm install electron --save-dev
+        npm install electron-builder --save-dev
+
+    - name: Build .exe Package
+      run: npm run build
+
+    - name: Upload .exe Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: YouTube-Desktop-EXE
+        path: dist/*.exe
