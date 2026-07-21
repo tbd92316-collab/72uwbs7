@@ -22,7 +22,7 @@ jobs:
     - name: Create Project Files Automatically
       shell: bash
       run: |
-        # 1. Initialize package.json with author, description, and publish:null
+        # 1. Initialize package.json with icon config
         cat << 'EOF' > package.json
         {
           "name": "youtube-desktop",
@@ -43,6 +43,7 @@ jobs:
           },
           "build": {
             "appId": "com.youtube.desktop",
+            "icon": "logo.png",
             "win": {
               "target": "nsis"
             },
@@ -51,15 +52,17 @@ jobs:
         }
         EOF
 
-        # 2. Create main.js (App code to load YouTube)
+        # 2. Create main.js (App code to load YouTube and set window icon)
         cat << 'EOF' > main.js
         const { app, BrowserWindow } = require('electron');
+        const path = require('path');
 
         function createWindow() {
           const win = new BrowserWindow({
             width: 1200,
             height: 800,
             autoHideMenuBar: true,
+            icon: path.join(__dirname, 'logo.png'), // Logo yahan se link hoga
             webPreferences: {
               nodeIntegration: false,
               contextIsolation: true
